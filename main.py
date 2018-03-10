@@ -1,9 +1,11 @@
 import cv2
 import time
 import random
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
-videoSource = 'src/videos/Finalcom_Infrapurple.mov' # set initial video source
+GPIO.setmode(GPIO.BOARD)
+
+videoSource = 'src/videos/centaur_1.mpg' # set initial video source
 cap = cv2.VideoCapture(videoSource)
 playingVideo = True
 
@@ -12,10 +14,10 @@ currentFrame = 0 # remember which frame we are at
 videoFilter = ''; # dont apply any filter in the beginning?
 
 # Raspberry pi setup
-# GPIO.setup(17, GPIO.IN)
-# GPIO.setup(18, GPIO.IN)
-# GPIO.setup(19, GPIO.IN)
-# GPIO.setup(20, GPIO.IN)
+GPIO.setup(3, GPIO.IN)
+#GPIO.setup(5, GPIO.IN)
+#GPIO.setup(7, GPIO.IN)
+#GPIO.setup(11, GPIO.IN)
 
 def rageQuit():
     cap.release()
@@ -33,19 +35,19 @@ def showVideo():
         time.sleep(1.0 / FPS) # show video at playback rate
 
         # Switch filter according to the button press
-        # if GPIO.input(17):
-        #     videoFilter = 'radio'
-        # if GPIO.input(18):
-        #     videoFilter = 'ultraviolet'
-        # if GPIO.input(19):
-        #     videoFilter = 'xray'
-        # if GPIO.input(20):
-        #     videoFilter = 'gamma'
+        if (GPIO.input(3) == 1):
+            videoFilter = 'radio'
+        #if GPIO.input(3):
+        #    videoFilter = 'ultraviolet'
+        #if GPIO.input(4):
+        #    videoFilter = 'xray'
+        #if GPIO.input(17):
+        #    videoFilter = 'gamma'
 
         # For testing colors
         # if currentFrame % FPS == 0:
-        #     filters = ['', 'radio', 'infrared', 'ultraviolet', 'xray', 'gamma']
-        #     videoFilter = random.choice(filters)
+        #    filters = ['', 'radio', 'infrared', 'ultraviolet', 'xray', 'gamma']
+        #    videoFilter = random.choice(filters)
 
         if ret == True:
             currentFrame += 1
@@ -64,8 +66,9 @@ def showVideo():
             elif videoFilter == 'gamma':
                 frame = cv2.applyColorMap(gray_frame, cv2.COLORMAP_HOT)
 
-            cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
-            cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+            #cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
+            #cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+            frame = cv2.resize(frame, (900,640))
             cv2.imshow('window',frame)
         else:
             currentFrame = 0
