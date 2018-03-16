@@ -14,12 +14,59 @@ currentFrame = 0 # remember which frame we are at
 videoFilter = ''; # dont apply any filter in the beginning?
 
 # Raspberry pi setup
-GPIO.setup(3, GPIO.IN)
-#GPIO.setup(5, GPIO.IN)
-#GPIO.setup(7, GPIO.IN)
-#GPIO.setup(11, GPIO.IN)
+NEBULA_FILTER_1 = 7
+NEBULA_FILTER_2 = 11
+NEBULA_FILTER_3 = 13
+NEBULA_FILTER_4 = 15
+GPIO.setup(NEBULA_FILTER_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(NEBULA_FILTER_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(NEBULA_FILTER_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(NEBULA_FILTER_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# LED PINS
+GREEN_1 = 40
+RED_1 = 37
+BLUE_1 = 38
+GPIO.setup(RED_1,GPIO.OUT)
+GPIO.setup(GREEN_1,GPIO.OUT)
+GPIO.setup(BLUE_1,GPIO.OUT)
+GREEN_2 = 31
+RED_2 = 29
+BLUE_2 = 32
+GPIO.setup(RED_2,GPIO.OUT)
+GPIO.setup(GREEN_2,GPIO.OUT)
+GPIO.setup(BLUE_2,GPIO.OUT)
+GREEN_3 = 36
+RED_3 = 33
+BLUE_3 = 35
+GPIO.setup(RED_3,GPIO.OUT)
+GPIO.setup(GREEN_3,GPIO.OUT)
+GPIO.setup(BLUE_3,GPIO.OUT)
+GREEN_4 = 22
+RED_4 = 16
+BLUE_4 = 18
+GPIO.setup(RED_4,GPIO.OUT)
+GPIO.setup(GREEN_4,GPIO.OUT)
+GPIO.setup(BLUE_4,GPIO.OUT)
+
+# We are not using the blue line
+GPIO.output(BLUE_1,0)
+GPIO.output(BLUE_2,0)
+GPIO.output(BLUE_3,0)
+GPIO.output(BLUE_4,0)
+
+# Initial state
+GPIO.output(GREEN_1,1)
+GPIO.output(GREEN_2,0)
+GPIO.output(GREEN_3,0)
+GPIO.output(GREEN_4,0)
+GPIO.output(RED_1,0)
+GPIO.output(RED_2,0)
+GPIO.output(RED_3,0)
+GPIO.output(RED_4,0)
 
 def rageQuit():
+    GPIO.cleanup()
     cap.release()
     cv2.destroyAllWindows()
 
@@ -33,16 +80,48 @@ def showVideo():
     while playingVideo:
         ret, frame = cap.read()
         time.sleep(1.0 / FPS) # show video at playback rate
-
+        
         # Switch filter according to the button press
-        if (GPIO.input(3) == 1):
+        if (GPIO.input(NEBULA_FILTER_1) == False):
+            videoFilter = 'gamma'
+            GPIO.output(RED_1,0)
+            GPIO.output(RED_2,1)
+            GPIO.output(RED_3,1)
+            GPIO.output(RED_4,1)
+            GPIO.output(GREEN_1,1)
+            GPIO.output(GREEN_2,0)
+            GPIO.output(GREEN_3,0)
+            GPIO.output(GREEN_4,0)
+        if (GPIO.input(NEBULA_FILTER_2) == False):
+            videoFilter = 'xray'
+            GPIO.output(RED_1,1)
+            GPIO.output(RED_2,0)
+            GPIO.output(RED_3,1)
+            GPIO.output(RED_4,1)
+            GPIO.output(GREEN_1,0)
+            GPIO.output(GREEN_2,1)
+            GPIO.output(GREEN_3,0)
+            GPIO.output(GREEN_4,0)
+        if (GPIO.input(NEBULA_FILTER_3) == False):
+            videoFilter = 'infrared'
+            GPIO.output(RED_1,1)
+            GPIO.output(RED_2,1)
+            GPIO.output(RED_3,0)
+            GPIO.output(RED_4,1)
+            GPIO.output(GREEN_1,0)
+            GPIO.output(GREEN_2,0)
+            GPIO.output(GREEN_3,1)
+            GPIO.output(GREEN_4,0)
+        if (GPIO.input(NEBULA_FILTER_4) == False):
             videoFilter = 'radio'
-        #if GPIO.input(3):
-        #    videoFilter = 'ultraviolet'
-        #if GPIO.input(4):
-        #    videoFilter = 'xray'
-        #if GPIO.input(17):
-        #    videoFilter = 'gamma'
+            GPIO.output(RED_1,1)
+            GPIO.output(RED_2,1)
+            GPIO.output(RED_3,1)
+            GPIO.output(RED_4,0)
+            GPIO.output(GREEN_1,0)
+            GPIO.output(GREEN_2,0)
+            GPIO.output(GREEN_3,0)
+            GPIO.output(GREEN_4,1)
 
         # For testing colors
         # if currentFrame % FPS == 0:
@@ -66,10 +145,13 @@ def showVideo():
             elif videoFilter == 'gamma':
                 frame = cv2.applyColorMap(gray_frame, cv2.COLORMAP_HOT)
 
+            #frame = cv2.resize(frame, (1280,1020))
             #cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
-            #cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
-            frame = cv2.resize(frame, (900,640))
-            cv2.imshow('window',frame)
+            #cv2.setWindowProperty("window",0,1)
+            #cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
+            #cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+            cv2.imshow('test',frame)
+            
         else:
             currentFrame = 0
             showVideo()
