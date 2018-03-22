@@ -1,27 +1,29 @@
 import cv2
+import sys
 import time
 import random
 import RPi.GPIO as GPIO
 
+import Adafruit_MPR121.MPR121 as MPR121
+
 GPIO.setmode(GPIO.BOARD)
 
 videoSource = 'src/videos/centaur_1.mpg' # set initial video source
-cap = cv2.VideoCapture(videoSource)
+capVideo = cv2.VideoCapture(videoSource)
 playingVideo = True
 
 FPS = 24.0 # mostly use 24 i guess
 currentFrame = 0 # remember which frame we are at
 videoFilter = ''; # dont apply any filter in the beginning?
 
+# capavative touch sensor
+capTouch = MPR121.MPR121()
+
+if not capTouch.begin():
+    print('Error initializing MPR121.  Check your wiring!')
+    sys.exit(1)
+
 # Raspberry pi setup
-NEBULA_FILTER_1 = 7
-NEBULA_FILTER_2 = 11
-NEBULA_FILTER_3 = 13
-NEBULA_FILTER_4 = 15
-GPIO.setup(NEBULA_FILTER_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(NEBULA_FILTER_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(NEBULA_FILTER_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(NEBULA_FILTER_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # LED PINS
 GREEN_1 = 40
@@ -65,9 +67,13 @@ GPIO.output(RED_2,0)
 GPIO.output(RED_3,0)
 GPIO.output(RED_4,0)
 
+def turnOffLedLines(lines):
+    for line in lines:
+        GPIO.output(line, 0);
+
 def rageQuit():
     GPIO.cleanup()
-    cap.release()
+    capVideo.release()
     cv2.destroyAllWindows()
 
 def showVideo():
@@ -75,14 +81,14 @@ def showVideo():
     global playingVideo
     global videoFilter
 
-    cap.set(1, currentFrame)
+    capVideo.set(0, currentFrame)
 
     while playingVideo:
-        ret, frame = cap.read()
+        ret, frame = capVideo.read()
         time.sleep(1.0 / FPS) # show video at playback rate
         
         # Switch filter according to the button press
-        if (GPIO.input(NEBULA_FILTER_1) == False):
+        if capTouch.is_touched(1):
             videoFilter = 'gamma'
             GPIO.output(RED_1,0)
             GPIO.output(RED_2,1)
@@ -92,7 +98,7 @@ def showVideo():
             GPIO.output(GREEN_2,0)
             GPIO.output(GREEN_3,0)
             GPIO.output(GREEN_4,0)
-        if (GPIO.input(NEBULA_FILTER_2) == False):
+        if capTouch.is_touched(2):
             videoFilter = 'xray'
             GPIO.output(RED_1,1)
             GPIO.output(RED_2,0)
@@ -102,7 +108,7 @@ def showVideo():
             GPIO.output(GREEN_2,1)
             GPIO.output(GREEN_3,0)
             GPIO.output(GREEN_4,0)
-        if (GPIO.input(NEBULA_FILTER_3) == False):
+        if capTouch.is_touched(3):
             videoFilter = 'infrared'
             GPIO.output(RED_1,1)
             GPIO.output(RED_2,1)
@@ -112,7 +118,7 @@ def showVideo():
             GPIO.output(GREEN_2,0)
             GPIO.output(GREEN_3,1)
             GPIO.output(GREEN_4,0)
-        if (GPIO.input(NEBULA_FILTER_4) == False):
+        if capTouch.is_touched(4):
             videoFilter = 'radio'
             GPIO.output(RED_1,1)
             GPIO.output(RED_2,1)
