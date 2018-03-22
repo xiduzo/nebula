@@ -51,25 +51,16 @@ GPIO.setup(RED_4,GPIO.OUT)
 GPIO.setup(GREEN_4,GPIO.OUT)
 GPIO.setup(BLUE_4,GPIO.OUT)
 
+def setLedLinesState(lines, state):
+    for line in lines:
+        GPIO.output(line, state);
+
 # We are not using the blue line
-GPIO.output(BLUE_1,0)
-GPIO.output(BLUE_2,0)
-GPIO.output(BLUE_3,0)
-GPIO.output(BLUE_4,0)
+setLedLinesState([BLUE_1, BLUE_2, BLUE_3, BLUE_4], 0)
 
 # Initial state
-GPIO.output(GREEN_1,1)
-GPIO.output(GREEN_2,0)
-GPIO.output(GREEN_3,0)
-GPIO.output(GREEN_4,0)
-GPIO.output(RED_1,0)
-GPIO.output(RED_2,0)
-GPIO.output(RED_3,0)
-GPIO.output(RED_4,0)
-
-def turnOffLedLines(lines):
-    for line in lines:
-        GPIO.output(line, 0);
+setLedLinesState([GREEN_1], 1)
+setLedLinesState([GREEN_2, GREEN_3, GREEN_4, RED_1, RED_2, RED_3, RED_4], 0)
 
 def rageQuit():
     GPIO.cleanup()
@@ -81,7 +72,7 @@ def showVideo():
     global playingVideo
     global videoFilter
 
-    capVideo.set(0, currentFrame)
+    capVideo.set(1, currentFrame)
 
     while playingVideo:
         ret, frame = capVideo.read()
@@ -90,49 +81,28 @@ def showVideo():
         # Switch filter according to the button press
         if capTouch.is_touched(1):
             videoFilter = 'gamma'
-            GPIO.output(RED_1,0)
-            GPIO.output(RED_2,1)
-            GPIO.output(RED_3,1)
-            GPIO.output(RED_4,1)
-            GPIO.output(GREEN_1,1)
-            GPIO.output(GREEN_2,0)
-            GPIO.output(GREEN_3,0)
-            GPIO.output(GREEN_4,0)
+            # on
+            setLedLinesState([RED_2, RED_3, RED_4, GREEN_1], 1)
+            # off
+            setLedLinesState([RED_1, GREEN_2, GREEN_3, GREEN_4], 0)
         if capTouch.is_touched(2):
             videoFilter = 'xray'
-            GPIO.output(RED_1,1)
-            GPIO.output(RED_2,0)
-            GPIO.output(RED_3,1)
-            GPIO.output(RED_4,1)
-            GPIO.output(GREEN_1,0)
-            GPIO.output(GREEN_2,1)
-            GPIO.output(GREEN_3,0)
-            GPIO.output(GREEN_4,0)
+            # on
+            setLedLinesState([RED_1, RED_3, RED_4, GREEN_2], 1)
+            # off
+            setLedLinesState([RED_2, GREEN_1, GREEN_3, GREEN_4], 0)
         if capTouch.is_touched(3):
             videoFilter = 'infrared'
-            GPIO.output(RED_1,1)
-            GPIO.output(RED_2,1)
-            GPIO.output(RED_3,0)
-            GPIO.output(RED_4,1)
-            GPIO.output(GREEN_1,0)
-            GPIO.output(GREEN_2,0)
-            GPIO.output(GREEN_3,1)
-            GPIO.output(GREEN_4,0)
+            # on
+            setLedLinesState([RED_1, RED_2, RED_4, GREEN_3], 1)
+            # off
+            setLedLinesState([RED_3, GREEN_1, GREEN_2, GREEN_4], 0)
         if capTouch.is_touched(4):
             videoFilter = 'radio'
-            GPIO.output(RED_1,1)
-            GPIO.output(RED_2,1)
-            GPIO.output(RED_3,1)
-            GPIO.output(RED_4,0)
-            GPIO.output(GREEN_1,0)
-            GPIO.output(GREEN_2,0)
-            GPIO.output(GREEN_3,0)
-            GPIO.output(GREEN_4,1)
-
-        # For testing colors
-        # if currentFrame % FPS == 0:
-        #    filters = ['', 'radio', 'infrared', 'ultraviolet', 'xray', 'gamma']
-        #    videoFilter = random.choice(filters)
+            # on
+            setLedLinesState([RED_1, RED_1, RED_3, GREEN_4], 1)
+            # off
+            setLedLinesState([RED_4, GREEN_1, GREEN_2, GREEN_3], 0)
 
         if ret == True:
             currentFrame += 1
